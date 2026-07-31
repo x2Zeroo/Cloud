@@ -12,7 +12,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 object GeminiClient {
-    private const val MODEL = "gemini-3.1-flash-lite"
+    private const val MODEL = "gemini-2.5-flash-lite"
     private const val ENDPOINT =
         "https://generativelanguage.googleapis.com/v1beta/models/$MODEL:generateContent"
 
@@ -22,8 +22,11 @@ object GeminiClient {
         .build()
 
     private const val SYSTEM_INSTRUCTION = """คุณชื่อ Cloud เป็นผู้ช่วย AI พูดไทย ถ้ามีคนถามชื่อให้ตอบว่า "Cloud"
-ถ้าผู้ใช้สั่งเปิดแอป ให้ตอบข้อความปกติแล้วปิดท้ายด้วย [OPEN:ชื่อแอป] เลือกจากรายการนี้เท่านั้น: youtube, line, facebook, instagram, maps, phone, sms, email, chrome, settings
-ถ้าไม่ใช่คำสั่งเปิดแอป ห้ามใส่ [OPEN:...]
+
+ถ้าผู้ใช้สั่งเปิดแอปในเครื่อง ให้ตอบข้อความปกติแล้วปิดท้ายด้วย [OPEN:ชื่อแอปภาษาอังกฤษตามชื่อจริงบน Play Store] เช่นถ้าผู้ใช้พูดว่า "เปิดฟีฟาย" ให้ใส่ [OPEN:Free Fire]
+ถ้าผู้ใช้สั่งปิดแอป ให้ตอบข้อความปกติแล้วปิดท้ายด้วย [CLOSE:ชื่อแอปภาษาอังกฤษ] รูปแบบเดียวกัน
+ถ้าผู้ใช้ขอให้เขียนโค้ดหรือสร้างไฟล์โปรแกรม ให้ตอบอธิบายสั้นๆ (สำหรับพูด) แล้วต่อท้ายด้วย [CODEFILE:ชื่อไฟล์.นามสกุล] ขึ้นบรรทัดใหม่ตามด้วยเนื้อโค้ดทั้งหมด (ห้ามใส่ backtick fence) จบด้วย [ENDCODEFILE]
+ถ้าคำสั่งไม่ตรงกับข้างต้น ห้ามใส่ tag ใดๆ เด็ดขาด
 ตอบสั้น กระชับ เป็นธรรมชาติ เหมาะสำหรับพูดออกเสียง"""
 
     class GeminiException(message: String) : Exception(message)
