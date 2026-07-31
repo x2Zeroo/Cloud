@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <com.cloud.assistant.OrbView
+        android:id="@+id/orbView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <TextView
+        android:id="@+id/transcriptText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textColor="#5c6672"
+        android:textSize="13sp" />
+
+    <LinearLayout
+        android:id="@+id/voiceControls"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="14dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <ImageButton android:id="@+id/typeToggleBtn" android:layout_width="34dp" android:layout_height="34dp"
+            android:layout_marginEnd="22dp" android:background="@android:color/transparent"
+            android:src="@android:drawable/ic_menu_edit" app:tint="#eaf6ff" />
+
+        <ImageButton android:id="@+id/micBtn" android:layout_width="46dp" android:layout_height="46dp"
+            android:background="@android:color/transparent"
+            android:src="@android:drawable/ic_btn_speak_now" app:tint="#8fd8ff" />
+
+        <ImageButton android:id="@+id/nextBtn" android:layout_width="34dp" android:layout_height="34dp"
+            android:layout_marginStart="22dp" android:background="@android:color/transparent"
+            android:src="@android:drawable/ic_media_next" app:tint="#eaf6ff" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/typeForm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <ImageButton android:id="@+id/backToVoiceBtn" android:layout_width="32dp" android:layout_height="32dp"
+            android:background="@android:color/transparent"
+            android:src="@android:drawable/ic_btn_speak_now" app:tint="#5c6672" />
+
+        <EditText android:id="@+id/typeInput" android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:layout_marginStart="10dp"
+            android:background="@android:color/transparent" android:hint="พิมพ์ข้อความ..."
+            android:textColor="#eaf6ff" android:textColorHint="#5c6672" android:imeOptions="actionSend"
+            android:inputType="text" android:singleLine="true" />
+
+        <ImageButton android:id="@+id/typeSendBtn" android:layout_width="32dp" android:layout_height="32dp"
+            android:background="@android:color/transparent"
+            android:src="@android:drawable/ic_menu_send" app:tint="#8fd8ff" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/capText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:text="แตะ &quot;แตะ&quot; เพื่อเปิดใช้งาน"
+        android:textColor="#5c6672"
+        android:textSize="10sp" />
+</LinearLayout>
