@@ -86,6 +86,7 @@ class MainActivity : AppCompatActivity() {
                 PackageManager.PERMISSION_GRANTED
             val perms = mutableListOf(Manifest.permission.RECORD_AUDIO)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) perms.add(Manifest.permission.POST_NOTIFICATIONS)
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) perms.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             if (hasPermission) startVoiceService() else requestPermissions.launch(perms.toTypedArray())
         }
     }
