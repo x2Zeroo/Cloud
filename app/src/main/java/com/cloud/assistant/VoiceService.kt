@@ -1,8 +1,10 @@
 package com.cloud.assistant
 
 import android.app.*
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.net.Uri
 import android.os.Binder
 import android.os.Build
 import android.os.Bundle
@@ -16,6 +18,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
 import kotlinx.coroutines.*
+import java.net.URLConnection
 import java.util.Locale
 
 class VoiceService : Service() {
@@ -155,17 +158,44 @@ class VoiceService : Service() {
     private fun handleUserText(text: String) {
         recognizer?.stopListening()
         val apiKey = SecurePrefs.getKey(this)
-        if (apiKey.isBlank()) { listener?.onReply("กรุณาใส่ Gemini API key ก่อน"); return }
+        if (apiKey.isBlank()) {
+            listener?.onReply("กรุณาใส่ Gemini API key ก่อน")
+            listener?.onStateChanged(listening, "ยังไม่ได้ตั้งค่า API key")
+            return
+        }
 
         history.add("user" to text)
         listener?.onStateChanged(listening, "กำลังคิด...")
         scope.launch {
             try {
                 var reply = GeminiClient.send(apiKey, history)
-                Regex("\\[OPEN:(\\w+)]", RegexOption.IGNORE_CASE).find(reply)
-                    ?.groupValues?.get(1)?.let { AppLauncher.open(this@VoiceService, it) }
-                reply = reply.replace(Regex("\\[OPEN:\\w+]", RegexOption.IGNORE_CASE), "").trim()
 
+                Regex("\\[OPEN:([^\\]]+)]", RegexOption.IGNORE_CASE).find(reply)?.let { m ->
+                    val appName = m.groupValues[1].trim()
+                    val ok = AppLauncher.open(this@VoiceService, appName)
+                    reply = reply.replace(m.value, "")
+                    if (!ok) reply += " (ไม่พบแอป $appName ในเครื่อง)"
+                }
+                Regex("\\[CLOSE:([^\\]]+)]", RegexOption.IGNORE_CASE).find(reply)?.let { m ->
+                    val appName = m.groupValues[1].trim()
+                    val ok = AppLauncher.close(this@VoiceService, appName)
+                    reply = reply.replace(m.value, "")
+                    if (!ok) reply += " (ปิด $appName ให้ไม่ได้ อาจกำลังเปิดอยู่ หรือไม่พบแอปนี้)"
+                }
+                Regex("\\[CODEFILE:([^\\]]+)]([\\s\\S]*?)\\[ENDCODEFILE]").find(reply)?.let { m ->
+                    val filename = m.groupValues[1].trim()
+                    val code = m.groupValues[2].trim('\n', '\r', ' ')
+                    reply = reply.replace(m.value, "").trim()
+                    val result = CodeFileWriter.save(this@VoiceService, filename, code)
+                    if (result != null) {
+                        reply += " บันทึกไฟล์ $filename ไว้ที่ ${result.displayPath} แล้ว"
+                        openSavedFile(filename, result.viewUri)
+                    } else {
+                        reply += " บันทึกไฟล์ไม่สำเร็จ"
+                    }
+                }
+
+                reply = reply.trim()
                 history.add("model" to reply)
                 listener?.onReply(reply)
                 listener?.onStateChanged(listening, "แตะ \"แตะ\" เพื่อเปิดใช้งาน")
@@ -173,8 +203,22 @@ class VoiceService : Service() {
             } catch (e: GeminiClient.GeminiException) {
                 history.removeLastOrNull()
                 listener?.onReply("เกิดข้อผิดพลาด: ${e.message}")
+                listener?.onStateChanged(listening, "เกิดข้อผิดพลาด")
                 if (listening) startRecognizer()
             }
+        }
+    }
+
+    private fun openSavedFile(filename: String, uri: Uri) {
+        try {
+            val mime = URLConnection.guessContentTypeFromName(filename) ?: "text/plain"
+            val viewIntent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, mime)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(viewIntent)
+        } catch (e: ActivityNotFoundException) {
+            // No app registered to view this file type — file is still saved, just not auto-opened.
         }
     }
 
